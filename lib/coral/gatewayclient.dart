@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:coral_gateway_demo_app/coral/coralmsg.dart';
 
 class GatewayClient {
-  String GATEWAY_URL = "ws://192.168.0.23:3030/sync-db";
+  String GATEWAY_URL = "ws://<HOST_IP>:3030/sync-db";
   WebSocket _webSocket;
   String sessionId;
   bool isConnected;
