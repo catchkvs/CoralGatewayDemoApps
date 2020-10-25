@@ -16,7 +16,8 @@ class SyncExecutor {
     database = db;
     authToken = token;
     client = GatewayClient.getInstance();
-    cmdStoreMap = {"UpdateItem": "items"};
+    cmdStoreMap = new Map();
+    cmdStoreMap['UpdateItem'] = 'items';
   }
 
   static void execute(Timer t) {
@@ -34,22 +35,55 @@ class SyncExecutor {
         {
           value.forEach((element) {
             print("Processing command: " + element.name);
-            Future<Map<String, dynamic>> dataFuture = get(element.data, cmdStoreMap[element.name]);
+            print("collection name: " + cmdStoreMap[element.name]);
+            Future<DataToSync> dataFuture = getDataToSync(element.data, cmdStoreMap[element.name]);
             dataFuture.then(syncData);
           })
         }
     });
   }
 
-  static void syncData(Map<String, dynamic> input) {
-    String data = base64.encode(utf8.encode(jsonEncode(input)));
-    ClientMsg msg = new ClientMsg(Command: "SyncData", Data: data,  AuthToken: authToken, SessionId: client.sessionId);
-    client.sendMessage(jsonEncode(msg.toJson()));
+  static void deleteCommand(String id) {
+    Queue.getInstance().delete(id);
   }
 
-  static Future<Map<String, dynamic>> get(String id, String dbStoreName) async {
+
+  static void syncData(DataToSync input) {
+    if(input != null) {
+      SyncDataMsg msg = new SyncDataMsg(AuthToken: authToken,
+          SessionId: client.sessionId,
+          CollectionName: input.collectionName,
+          DataKey: input.dataKey,
+          DataValue: input.dataValue);
+      client.sendMessage(jsonEncode(msg.toJson()));
+      deleteCommand(input.dataKey);
+    }
+  }
+
+  static Future<DataToSync> getDataToSync(String id, String dbStoreName) async {
+    print("String id: " + id + " Collection name: " + dbStoreName);
     var store = stringMapStoreFactory.store(dbStoreName);
     var record = await store.record(id).getSnapshot(database);
-    return record.value;
+    print(record);
+    if(record != null) {
+      String dataValue = base64.encode(utf8.encode(jsonEncode(record.value)));
+      String collectionName = dbStoreName;
+      String dataKey = record.value['id'];
+      return new DataToSync(collectionName: collectionName, dataKey: dataKey, dataValue: dataValue);
+    } else {
+      deleteCommand(id);
+    }
   }
+}
+
+class DataToSync {
+  String collectionName;
+  String dataKey;
+  String dataValue;
+
+  DataToSync({
+    this.collectionName,
+    this.dataKey,
+    this.dataValue
+  });
 }

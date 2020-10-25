@@ -22,28 +22,32 @@ class ServerMsg {
   }
 }
 
-class ClientMsg {
-  String Command;
+class SyncDataMsg {
   String SessionId;
   String AuthToken;
-  String Data;
+  String DataKey;
+  String DataValue;
+  String CollectionName;
 
-  ClientMsg({
-    this.Command,
-    this.Data,
+  SyncDataMsg({
     this.AuthToken,
-    this.SessionId
+    this.SessionId,
+    this.DataKey,
+    this.DataValue,
+    this.CollectionName
   });
   Map<String, dynamic> toJson() {
     return {
-      'Command': this.Command,
-      'Data' : this.Data,
       'AuthToken': this.AuthToken,
-      'SessionId': this.SessionId
+      'SessionId': this.SessionId,
+      'DataKey' : this.DataKey,
+      'DataValue': this.DataValue,
+      'CollectionName': this.CollectionName
     };
   }
 
-  static ClientMsg fromJson(Map<String, dynamic> map) {
-    return ClientMsg(Command: map['Command'], Data: map['Data'], AuthToken: map['AuthToken'], SessionId: map['SessionId']);
+  static SyncDataMsg fromJson(Map<String, dynamic> map) {
+    return SyncDataMsg(AuthToken: map['AuthToken'], SessionId: map['SessionId'], DataKey: map['DataKey'],
+        DataValue: map['DataValue'], CollectionName: map['CollectionName'] );
   }
 }

@@ -5,9 +5,9 @@ import 'package:sembast/sembast.dart';
 
 class ItemStore {
 
-  String itemStoreName = "Items";
+  String itemStoreName = "items";
   var db;
-  static ItemStore _instance = ItemStore._internal();
+  static final ItemStore _instance = ItemStore._internal();
 
   ItemStore._internal();
 
